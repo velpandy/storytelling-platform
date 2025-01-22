@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Stories = () => {
   const navigate = useNavigate();
@@ -9,18 +10,25 @@ const Stories = () => {
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [authenticated, setAuthenticated] = useState(true); // Simulating authentication state
 
-  // Simulate fetching stories
+  // Fetch stories from the backend
   useEffect(() => {
-    // Here you would typically fetch data from the backend
-    const fetchedStories = [
-      { id: 1, title: "The First Story", description: "This is the first story", genre: "Fantasy" },
-      { id: 2, title: "The Second Story", description: "This is the second story", genre: "Sci-Fi" },
-      { id: 3, title: "The Mystery Tale", description: "A mysterious tale", genre: "Mystery" },
-      { id: 4, title: "Romantic Journey", description: "A romantic story", genre: "Romance" },
-    ];
-    setStories(fetchedStories);
-    setFilteredStories(fetchedStories);
-  }, []);
+    const fetchStories = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/collaborate/stories");
+        const fetchedStories = response.data.map((story) => ({
+          id: story._id,
+          title: story.name,
+          description: story.description,
+          genre: genres.includes(story.genre) ? story.genre : "Unknown", // Fallback if genre is not listed
+        }));
+        setStories(fetchedStories);
+        setFilteredStories(fetchedStories);
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+      }
+    };
+    fetchStories();
+  }, [genres]);
 
   // Filter stories based on selected genre
   const handleGenreChange = (event) => {
