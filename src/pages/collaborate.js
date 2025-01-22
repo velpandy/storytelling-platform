@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import './collaborate.css';
 import '@fortawesome/fontawesome-free/css/all.css';
+
 const socket = io("http://localhost:5000"); // Update to match your backend server
 
 const Collaborate = () => {
@@ -11,8 +12,8 @@ const Collaborate = () => {
   const [currentContent, setCurrentContent] = useState("");
   const [versionHistory, setVersionHistory] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
-  const [votes, setVotes] = useState({ up: 0, down: 0 });
-  const [pendingRequests, setPendingRequests] = useState([]);
+  const [votes, setVotes] = useState({});
+  const userId = JSON.parse(localStorage.getItem("user"))._id;
 
   // Fetch stories on component mount
   useEffect(() => {
@@ -21,7 +22,43 @@ const Collaborate = () => {
       .then((data) => setStories(data));
   }, []);
 
-  // Handle story creation
+  useEffect(() => {
+    socket.on("newStory", (newStory) => {
+      setStories((prev) => [...prev, newStory]);
+    });
+
+    socket.on("updateVersion", (updatedVersion) => {
+      setVersionHistory((prev) => [...prev, updatedVersion]);
+      if (updatedVersion.storyId === currentStoryId) {
+        setCurrentContent(updatedVersion.content);
+      }
+    });
+
+    socket.on("updateVotes", ({ versionId, votes }) => {
+      setVotes((prev) => ({ ...prev, [versionId]: votes }));
+    });
+
+    return () => {
+      socket.off("newStory");
+      socket.off("updateVersion");
+      socket.off("updateVotes");
+    };
+  }, [currentStoryId]);
+
+  useEffect(() => {
+    socket.on("updateVotes", ({ versionId, votes }) => {
+      setVotes((prev) => ({
+        ...prev,
+        [versionId]: votes,
+      }));
+    });
+  
+    return () => {
+      socket.off("updateVotes");
+    };
+  }, []);
+  
+
   const handleStoryCreation = async () => {
     if (!story.name.trim() || story.name.length < 3) {
       alert("Story name must be at least 3 characters long.");
@@ -37,14 +74,18 @@ const Collaborate = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...story,
-        creatorId: JSON.parse(localStorage.getItem("user"))._id, // Add creator ID
+        creatorId: userId,
       }),
     });
   
     const newStory = await response.json();
   
     if (response) {
-      setStories([...stories, newStory]);
+      // Emit the new story to other clients
+      socket.emit("newStory", newStory);
+  
+      // Immediately update the stories list in the current frontend
+      setStories((prevStories) => [...prevStories, newStory]);
       alert("Story created successfully!");
     } else {
       alert(`Error creating story: ${newStory.error}`);
@@ -52,100 +93,115 @@ const Collaborate = () => {
   };
   
 
-  // Handle selecting a story for collaboration
   const selectStory = async (storyId) => {
-    // Reset the current content and version history before fetching new story data
     setCurrentStoryId(storyId);
-    setCurrentContent(""); // Clear previous content
-    setVersionHistory([]); // Clear previous version history
-    setCollaborators([]); // Clear previous collaborators
-    setVotes({ up: 0, down: 0 }); // Reset votes
+    setCurrentContent("");
+    setVersionHistory([]);
+    setCollaborators([]);
+    setVotes({});
   
-    // Fetch the story's versions
+    // Fetch versions for the selected story
     const versions = await fetch(`http://localhost:5000/collaborate/versions/${storyId}`).then((res) =>
       res.json()
     );
     if (versions.length > 0) {
-      setCurrentContent(versions[versions.length - 1].content); // Set the latest version's content
-      setVersionHistory(versions); // Set version history
+      setCurrentContent(versions[versions.length - 1].content);
+      setVersionHistory(versions);
     }
   
-    // Fetch collaborators
-    const story = stories.find((s) => s._id === storyId);
-    if (story) {
-      setCollaborators(story.collaborators || []);
+    const selectedStory = stories.find((s) => s._id === storyId);
+    if (selectedStory) {
+      setCollaborators(selectedStory.collaborators || []);
     }
   
-    // Fetch votes
-    const votesData = await fetch(`http://localhost:5000/collaborate/votes/${storyId}`).then((res) =>
-      res.json()
-    );
+    // Fetch votes for each version and set the votes state
+    const votesData = {};
+    for (const version of versions) {
+      const versionVotes = await fetch(`http://localhost:5000/collaborate/votes/version/${version._id}`)
+        .then((res) => res.json())
+        .catch(() => ({ up: 0, down: 0 })); // Handle errors gracefully
+      votesData[version._id] = versionVotes;
+    }
     setVotes(votesData);
   
-    // Join the socket room for the selected story
+    // Join the story room for real-time updates
     socket.emit("joinStory", storyId);
   };
   
 
-  // Handle real-time collaboration
-  useEffect(() => {
-    socket.on("updateContent", (updatedContent) => setCurrentContent(updatedContent));
-    return () => socket.off("updateContent");
-  }, []);
-
-
-
   const handleContentChange = (e) => {
-    setCurrentContent(e.target.value);
-    socket.emit("updateContent", { storyId: currentStoryId, content: e.target.value });
+    const updatedContent = e.target.value;
+    setCurrentContent(updatedContent);
+    socket.emit("updateContent", { storyId: currentStoryId, content: updatedContent });
   };
-  
-  const userId = JSON.parse(localStorage.getItem("user"))._id;
-  // Save the current version
-const saveVersion = async () => {
-  const response = await fetch("http://localhost:5000/collaborate/versions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      storyId: currentStoryId,
-      content: currentContent,
-      userId: userId,
-    }),
-  });
 
-  const savedVersion = await response.json();
-
-  if (response.ok) {
-    setVersionHistory((prevHistory) => [...prevHistory, savedVersion]); // Add to versionHistory
-  } else {
-    console.error("Failed to save version:", savedVersion.error);
-  }
-};
-
-
-  // Handle voting
-  const handleVote = async (direction) => {
-    await fetch("http://localhost:5000/collaborate/votes", {
+  const saveVersion = async () => {
+    const response = await fetch("http://localhost:5000/collaborate/versions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         storyId: currentStoryId,
-        userId: userId, // Replace with actual user ID
-        vote: direction,
+        content: currentContent,
+        userId: userId,
       }),
     });
-
-    setVotes((prevVotes) => ({
-      ...prevVotes,
-      [direction]: prevVotes[direction] + 1,
-    }));
+  
+    const savedVersion = await response.json();
+  
+    if (response.ok) {
+      // Emit the new version to other clients
+      socket.emit("updateVersion", savedVersion);
+  
+      // Immediately update the version history in the current frontend
+      setVersionHistory((prevVersions) => [...prevVersions, savedVersion]);
+      alert("Version saved successfully!");
+    } else {
+      console.error("Failed to save version:", savedVersion.error);
+    }
   };
+  
+
+  const revertToVersion = (versionContent) => {
+    setCurrentContent(versionContent);
+    socket.emit("updateContent", { storyId: currentStoryId, content: versionContent });
+  };
+
+  const handleVote = async (versionId, direction) => {
+    try {
+      await fetch("http://localhost:5000/collaborate/votes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          versionId,
+          userId,
+          vote: direction,
+        }),
+      });
+  
+      // Fetch updated votes for the specific version from the backend
+      const updatedVotes = await fetch(`http://localhost:5000/collaborate/votes/version/${versionId}`)
+        .then((res) => res.json())
+        .catch(() => ({ up: 0, down: 0 })); // Handle errors gracefully
+  
+      // Update the state for the specific version's votes
+      setVotes((prev) => ({
+        ...prev,
+        [versionId]: updatedVotes,
+      }));
+  
+      // Notify other clients of the updated votes
+      socket.emit("updateVotes", { versionId, votes: updatedVotes });
+    } catch (err) {
+      console.error("Failed to submit vote:", err);
+    }
+  };
+  
+  
 
   return (
     <div className="container">
       <h1>Collaborative Storytelling</h1>
-  
-      {/* Story Creation Section */}
+
       <div className="section">
         <h2>Create a New Story</h2>
         <input
@@ -168,31 +224,25 @@ const saveVersion = async () => {
         </select>
         <button onClick={handleStoryCreation}>Create Story</button>
       </div>
-  
-      {/* Story Selection Section */}
+
       <div className="section">
         <h2>Select a Story</h2>
-            <ul>
-              {stories.map((s) => (
-                <li key={s._id} onClick={() => selectStory(s._id)} className="story-item">
-                  {/* Story Name */}
-                  <strong>{s.name}</strong> - {s.description}
+        <ul>
+          {stories.map((s) => (
+            <li key={s._id} onClick={() => selectStory(s._id)} className="story-item">
+              <strong>{s.name}</strong> - {s.description}
+              <span className="story-icon">
+                {s.isPublic ? (
+                  <i className="fas fa-globe" title="Public Story"></i>
+                ) : (
+                  <i className="fas fa-lock" title="Private Story"></i>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-                  {/* Icon to denote public/private */}
-                  <span className="story-icon">
-                    {s.isPublic ? (
-                      <i className="fas fa-globe" title="Public Story"></i> // Public icon
-                    ) : (
-                      <i className="fas fa-lock" title="Private Story"></i> // Private icon
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-    </div>
-
-  
-      {/* Collaboration Section */}
       {currentStoryId && (
         <div className="section">
           <h2>Collaborate on {stories.find((s) => s._id === currentStoryId)?.name}</h2>
@@ -202,35 +252,30 @@ const saveVersion = async () => {
             placeholder="Edit story..."
           />
           <button onClick={saveVersion}>Save Version</button>
-  
-          {/* Version History */}
+
           <div className="version-history">
             <h3>Version History</h3>
             <ul>
-              {versionHistory.map((version, index) => (
+              {versionHistory.map((version) => (
                 <li key={version._id}>
-                  <strong>Version {index + 1}:</strong> {version.content} <br />
+                  <strong>{version.content}</strong>
                   <small>{new Date(version.timestamp).toLocaleString()}</small>
+                  <button onClick={() => revertToVersion(version.content)}>Revert</button>
+                  <div>
+                    <button onClick={() => handleVote(version._id, "up")}>Upvote</button>
+                    <button onClick={() => handleVote(version._id, "down")}>Downvote</button>
+                    <p>Upvotes: {votes[version._id]?.up || 0}</p>
+                    <p>Downvotes: {votes[version._id]?.down || 0}</p>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
-  
-          {/* Voting */}
-          <div>
-            <h3>Vote</h3>
-            <div className="vote-buttons">
-              <button onClick={() => handleVote("up")}>Upvote</button>
-              <button onClick={() => handleVote("down")}>Downvote</button>
-            </div>
-            <p>Upvotes: {votes.up || 0}</p>
-            <p>Downvotes: {votes.down || 0}</p>
-          </div>
+
         </div>
       )}
     </div>
   );
-  
 };
 
 export default Collaborate;

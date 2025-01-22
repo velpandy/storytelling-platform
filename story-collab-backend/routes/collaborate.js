@@ -165,36 +165,31 @@ router.get("/versions/:storyId", validateObjectId, async (req, res) => {
   }
 });
 
-// Cast a vote on a story
+// Cast a vote on a version
 router.post("/votes", async (req, res) => {
   try {
     const db = getDb();
-    const { storyId, userId, vote } = req.body;
+    const { versionId, userId, vote } = req.body;
 
-    if (!storyId || !userId || !["up", "down"].includes(vote)) {
+    // Validate input
+    if (!versionId || !userId || !["up", "down"].includes(vote)) {
       return res.status(400).json({ error: "Invalid vote data" });
     }
 
+    // Update or insert the vote
     const result = await db.collection("votes").updateOne(
-      { storyId: new ObjectId(storyId), userId },
-      { $set: { vote } },
-      { upsert: true }
+      { versionId: new ObjectId(versionId), userId }, // Filter by versionId and userId
+      { $set: { vote } }, // Set the vote (up or down)
+      { upsert: true } // Insert if it doesn't exist
     );
 
-    res.status(200).json({ message: "Vote recorded successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to cast vote" });
-  }
-});
+    // Fetch updated votes summary for the version
+    const votes = await db
+      .collection("votes")
+      .find({ versionId: new ObjectId(versionId) })
+      .toArray();
 
-// Get votes for a story
-router.get("/votes/:storyId", validateObjectId, async (req, res) => {
-  try {
-    const db = getDb();
-    const { storyId } = req.params;
-
-    const votes = await db.collection("votes").find({ storyId: new ObjectId(storyId) }).toArray();
+    // Calculate vote counts
     const voteSummary = votes.reduce(
       (summary, { vote }) => {
         if (vote === "up") summary.up += 1;
@@ -204,11 +199,44 @@ router.get("/votes/:storyId", validateObjectId, async (req, res) => {
       { up: 0, down: 0 }
     );
 
+    // Emit real-time update via socket.io
+   
+    res.status(200).json({ message: "Vote recorded successfully", votes: voteSummary });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to cast vote" });
+  }
+});
+
+// Route to get upvotes and downvotes for a specific version
+router.get("/votes/version/:versionId", validateObjectId, async (req, res) => {
+  try {
+    const db = getDb();
+    const { versionId } = req.params;
+
+    // Fetch votes for the given versionId
+    const votes = await db
+      .collection("votes")
+      .find({ versionId: new ObjectId(versionId) })
+      .toArray();
+
+    // Calculate vote counts
+    const voteSummary = votes.reduce(
+      (summary, { vote }) => {
+        if (vote === "up") summary.up += 1;  // Increment upvote count
+        else if (vote === "down") summary.down += 1;  // Increment downvote count
+        return summary;
+      },
+      { up: 0, down: 0 }  // Initialize counts for upvotes and downvotes
+    );
+
+    // Return the aggregated vote counts
     res.status(200).json(voteSummary);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch votes" });
   }
 });
+
 
 module.exports = router;
