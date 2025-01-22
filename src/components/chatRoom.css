@@ -1,0 +1,184 @@
+/* Chat Room Container */
+.chatroom-container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Message Section */
+.messages-container {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.message {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.message-bubble {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+strong {
+  font-weight: bold;
+}
+
+.votes {
+  display: flex;
+  justify-content: space-between;
+}
+
+.vote-btn {
+  background-color: #ddd;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.vote-btn:hover {
+  background-color: #ccc;
+}
+
+.vote-btn.upvote {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.vote-btn.downvote {
+  background-color: #f44336;
+  color: white;
+}
+
+.reply-btn {
+  margin-top: 10px;
+}
+
+.reply-btn button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reply-btn button:hover {
+  background-color: #0b7dda;
+}
+
+/* Replies Section */
+.replies-container {
+  margin-left: 20px;
+  margin-top: 10px;
+  border-left: 2px solid #2196F3;
+  padding-left: 20px;
+}
+
+.reply {
+  background-color: #f1f1f1;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* New Message and Reply Form */
+.message-form, .reply-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  resize: none;
+}
+
+textarea:focus {
+  border-color: #2196F3;
+}
+
+button {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0b7dda;
+}
+
+button:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
+}
+
+/* User not invited message */
+p {
+  color: #f44336;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* Handle multiple text areas when replying */
+.reply-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.reply-input-container .message-form {
+  margin-bottom: 10px;
+}
+
+.reply-input-container .reply-form {
+  margin-top: 10px;
+}
+
+.reply-input-container textarea {
+  margin-bottom: 10px;
+}
+
+/* Ensure proper alignment of reply form and message form */
+.reply-input-container button {
+  margin-top: 10px;
+}
+
+/* Hide reply input by default */
+.reply-input-container .reply-form {
+  display: none;
+}
