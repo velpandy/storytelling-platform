@@ -29,14 +29,15 @@ const ProfilePage = () => {
       <div className="profile-content">
         <h3>Email: {user ? user.email : "Loading..."}</h3>
         <h3>Username: {user ? user.username : "Loading..."}</h3>
-        <button onClick={handleLogout} className="logout-button">
-          Logout
-        </button>
+        
         <button
           onClick={() => navigate("/stories")}
           className="go-to-stories-button"
         >
           Go to Stories
+        </button>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
         </button>
       </div>
     </div>
