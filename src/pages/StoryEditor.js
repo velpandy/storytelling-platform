@@ -1,161 +1,168 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000"); // Replace with your actual backend URL
 
 const StoryEditor = () => {
-  const { storyId } = useParams();
-  const [story, setStory] = useState(null);
-  const [comment, setComment] = useState("");
+  const location = useLocation();
+  const { story } = location.state; // Retrieve the story passed from the Stories component
+  const [currentContent, setCurrentContent] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(0);
-  const [authenticated, setAuthenticated] = useState(true); // Simulating authentication state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching the story based on the storyId
-    setStory({
-      id: storyId,
-      title: `Story ${storyId}`,
-      content: `This is the content of story ${storyId}.`,
+    // Fetch the latest version of the selected story
+    const fetchStoryContent = async () => {
+      try {
+        const versions = await fetch(`http://localhost:5000/collaborate/versions/${story.id}`).then((res) => res.json());
+        if (versions.length > 0) {
+          setCurrentContent(versions[versions.length - 1].content);
+        }
+      } catch (err) {
+        console.error("Failed to fetch story content:", err);
+      }
+    };
+
+    fetchStoryContent();
+
+    socket.emit("joinStory", story.id); // Join the story room for real-time updates
+
+    socket.on("updateVersion", (updatedVersion) => {
+      if (updatedVersion.storyId === story.id) {
+        setCurrentContent(updatedVersion.content);
+      }
     });
-  }, [storyId]);
 
-  const handleCommentChange = (e) => {
-    setComment(e.target.value);
+    // Cleanup on component unmount
+    return () => {
+      socket.off("updateVersion");
+    };
+  }, [story.id]);
+
+  // Render stars for rating
+  const renderStars = () => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <span
+        key={index}
+        style={{
+          cursor: "pointer",
+          fontSize: "24px",
+          color: index < rating ? "#FFD700" : "#ccc", // Gold for selected, gray for unselected
+        }}
+        onClick={() => setRating(index + 1)}
+      >
+        ★
+      </span>
+    ));
   };
 
-  const handleRatingChange = (e) => {
-    setRating(e.target.value);
-  };
+  // Handle feedback submission
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmissionStatus(null);
 
-  const handleSave = () => {
-    if (authenticated) {
-      alert("Changes saved successfully!");
-    } else {
-      alert("You need to be logged in to edit the story.");
+    try {
+      const response = await fetch(`http://localhost:5000/feedback/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          storyId: story.id,
+          content: feedback,
+          rating, // Include the rating in the submission
+        }),
+      });
+
+      if (response.ok) {
+        setFeedback(""); // Clear the input field
+        setRating(0); // Reset the rating
+        setSubmissionStatus("Feedback submitted successfully!");
+      } else {
+        throw new Error("Failed to submit feedback");
+      }
+    } catch (error) {
+      setSubmissionStatus(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const handleCommentSubmit = () => {
-    if (authenticated) {
-      alert(`Comment: "${comment}" added successfully!`);
-      setComment("");
-    } else {
-      alert("You need to be logged in to comment.");
-    }
-  };
-
-  if (!story) {
-    return <div>Loading story...</div>;
-  }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>{story.title}</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <textarea
-          value={story.content}
-          disabled={!authenticated} // Disable content edit if not authenticated
-          rows="10"
-          cols="50"
-          style={{
-            width: '100%',
-            padding: '10px',
-            fontSize: '1rem',
-            borderRadius: '5px',
-            border: '1px solid #ddd',
-          }}
-        />
-      </div>
-      <div style={{ marginBottom: '20px' }}>
-        {authenticated && (
-          <button
-            onClick={handleSave}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#2196F3',
-              color: 'white',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            Save Changes
-          </button>
-        )}
+    <div className="container" style={{ marginTop: "30px" }}>
+      <h1>Story: {story.title}</h1>
+
+      {/* Displaying the content of the story */}
+      <div
+        style={{
+          width: "100%",
+          height: "200px",
+          marginBottom: "20px",
+          padding: "10px",
+          border: "1px solid #ddd",
+          borderRadius: "5px",
+          backgroundColor: "#f9f9f9",
+          overflowY: "auto",
+          whiteSpace: "pre-wrap",
+          wordWrap: "break-word",
+        }}
+      >
+        {currentContent || "No content available for this story."}
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <h3>Rate this Story</h3>
-        <select
-          value={rating}
-          onChange={handleRatingChange}
-          disabled={!authenticated}
+      {/* Feedback form */}
+      <form onSubmit={handleFeedbackSubmit} style={{ marginTop: "20px" }}>
+        {/* Render stars for rating */}
+        <div style={{ marginBottom: "10px" }}>
+          {renderStars()}
+        </div>
+
+        {/* Textarea for feedback */}
+        <textarea
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+          placeholder="Leave your feedback here..."
+          rows="4"
           style={{
-            padding: '10px',
-            fontSize: '1rem',
-            borderRadius: '5px',
-            border: '1px solid #ddd',
+            width: "100%",
+            padding: "10px",
+            borderRadius: "5px",
+            border: "1px solid #ddd",
+            marginBottom: "10px",
+          }}
+        />
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            padding: "10px 15px",
+            borderRadius: "5px",
+            backgroundColor: "#007bff",
+            color: "#fff",
+            border: "none",
           }}
         >
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-        {authenticated && (
-          <button
-            onClick={() => alert("Rating submitted!")}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#4CAF50',
-              color: 'white',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              border: 'none',
-              borderRadius: '5px',
-              marginLeft: '10px',
-            }}
-          >
-            Submit Rating
-          </button>
-        )}
-      </div>
+          {isSubmitting ? "Submitting..." : "Submit Feedback"}
+        </button>
+      </form>
 
-      <div>
-        <h3>Leave a Comment</h3>
-        <textarea
-          value={comment}
-          onChange={handleCommentChange}
-          placeholder="Write a comment..."
-          disabled={!authenticated}
+      {/* Submission Status Message */}
+      {submissionStatus && (
+        <p
           style={{
-            width: '100%',
-            padding: '10px',
-            height: '100px',
-            fontSize: '1rem',
-            borderRadius: '5px',
-            border: '1px solid #ddd',
+            color: isSubmitting ? "blue" : "green",
+            marginTop: "15px",
           }}
-        />
-        {authenticated && (
-          <button
-            onClick={handleCommentSubmit}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#FFC107',
-              color: 'white',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              border: 'none',
-              borderRadius: '5px',
-              marginTop: '10px',
-            }}
-          >
-            Submit Comment
-          </button>
-        )}
-      </div>
+        >
+          {submissionStatus}
+        </p>
+      )}
     </div>
   );
 };

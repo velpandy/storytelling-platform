@@ -1,9 +1,11 @@
+// Collaborate.js
 import React, { useState, useEffect } from "react";
+import { createRoom } from "./Community"; // Import the createRoom function
 import io from "socket.io-client";
 import './collaborate.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-const socket = io("http://localhost:5000"); // Update to match your backend server
+const socket = io("http://localhost:5000");
 
 const Collaborate = () => {
   const [stories, setStories] = useState([]);
@@ -45,20 +47,6 @@ const Collaborate = () => {
     };
   }, [currentStoryId]);
 
-  useEffect(() => {
-    socket.on("updateVotes", ({ versionId, votes }) => {
-      setVotes((prev) => ({
-        ...prev,
-        [versionId]: votes,
-      }));
-    });
-  
-    return () => {
-      socket.off("updateVotes");
-    };
-  }, []);
-  
-
   const handleStoryCreation = async () => {
     if (!story.name.trim() || story.name.length < 3) {
       alert("Story name must be at least 3 characters long.");
@@ -68,7 +56,7 @@ const Collaborate = () => {
       alert("Story description must be at least 10 characters long.");
       return;
     }
-  
+
     const response = await fetch("http://localhost:5000/collaborate/stories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,13 +65,21 @@ const Collaborate = () => {
         creatorId: userId,
       }),
     });
-  
+
     const newStory = await response.json();
-  
+
     if (response) {
       // Emit the new story to other clients
       socket.emit("newStory", newStory);
-  
+
+      // Create a room associated with the story
+      try {
+        const room = await createRoom(story.name, story.description, []); // Pass an empty array for invited users
+        alert(`Room for story created successfully! Room name: ${story.name}`);
+      } catch (error) {
+        console.error("Error creating room:", error);
+      }
+
       // Immediately update the stories list in the current frontend
       setStories((prevStories) => [...prevStories, newStory]);
       alert("Story created successfully!");
@@ -91,7 +87,6 @@ const Collaborate = () => {
       alert(`Error creating story: ${newStory.error}`);
     }
   };
-  
 
   const selectStory = async (storyId) => {
     setCurrentStoryId(storyId);
@@ -136,13 +131,15 @@ const Collaborate = () => {
   };
 
   const saveVersion = async () => {
+    const username = JSON.parse(localStorage.getItem("user")).email; // Get username from localStorage
+  
     const response = await fetch("http://localhost:5000/collaborate/versions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         storyId: currentStoryId,
         content: currentContent,
-        userId: userId,
+        username: username, // Pass username instead of userId
       }),
     });
   
@@ -159,6 +156,7 @@ const Collaborate = () => {
       console.error("Failed to save version:", savedVersion.error);
     }
   };
+  
   
 
   const revertToVersion = (versionContent) => {
@@ -254,24 +252,29 @@ const Collaborate = () => {
           <button onClick={saveVersion}>Save Version</button>
 
           <div className="version-history">
-            <h3>Version History</h3>
-            <ul>
-              {versionHistory.map((version) => (
-                <li key={version._id}>
-                  <strong>{version.content}</strong>
-                  <small>{new Date(version.timestamp).toLocaleString()}</small>
-                  <button onClick={() => revertToVersion(version.content)}>Revert</button>
-                  <div>
-                    <button onClick={() => handleVote(version._id, "up")}>Upvote</button>
-                    <button onClick={() => handleVote(version._id, "down")}>Downvote</button>
-                    <p>Upvotes: {votes[version._id]?.up || 0}</p>
-                    <p>Downvotes: {votes[version._id]?.down || 0}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
+  <h3>Version History</h3>
+  <ul>
+    {versionHistory.map((version) => (
+      <li key={version._id}>
+        <strong>
+          {/* Display only the first line of the version content */}
+          {version.content.split('\n')[0]}
+        </strong>
+        <small>
+          {/* Display the username saved with the version */}
+          {version.username} - {new Date(version.timestamp).toLocaleString()}
+        </small>
+        <button onClick={() => revertToVersion(version.content)}>Revert</button>
+        <div>
+          <button onClick={() => handleVote(version._id, "up")}>Upvote</button>
+          <button onClick={() => handleVote(version._id, "down")}>Downvote</button>
+          <p>Upvotes: {votes[version._id]?.up || 0}</p>
+          <p>Downvotes: {votes[version._id]?.down || 0}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
         </div>
       )}
     </div>

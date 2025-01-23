@@ -118,16 +118,16 @@ router.post("/collaborate/respond", async (req, res) => {
 router.post('/versions', async (req, res) => {
   try {
     const db = getDb();
-    const { storyId, content, userId } = req.body;
+    const { storyId, content, username } = req.body; // Replace userId with username
 
-    if (!storyId || !content || !userId) {
+    if (!storyId || !content || !username) { // Validate username instead of userId
       return res.status(400).json({ error: 'Invalid version data' });
     }
-    
+
     const newVersion = {
       storyId,
       content,
-      userId,
+      username, // Save username instead of userId
       timestamp: new Date(),
     };
 
@@ -144,6 +144,7 @@ router.post('/versions', async (req, res) => {
     res.status(500).json({ error: 'Failed to save version' });
   }
 });
+
 
 
 // Get version history for a story

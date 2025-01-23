@@ -3,6 +3,22 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import './Community.css';
 
+
+
+export const createRoom = async (roomName, roomDescription, invitedUsers) => {
+  try {
+    const response = await axios.post("http://localhost:5000/api/rooms", {
+      name: roomName,
+      description: roomDescription,
+      creator: JSON.parse(localStorage.getItem("user")).email, // Replace with dynamic user ID
+      invitedUsers, // Include invited users
+    });
+    return response.data; // Return the created room object
+  } catch (error) {
+    console.error("Error creating room:", error);
+    throw error;
+  }
+};
 const Community = () => {
   const [rooms, setRooms] = useState([]);
   const [roomName, setRoomName] = useState("");
@@ -55,6 +71,8 @@ const Community = () => {
       console.error("Error creating room:", error);
     }
   };
+
+  
 
   const toggleUserInvite = (userId) => {
     setInvitedUsers((prev) =>

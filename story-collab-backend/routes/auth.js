@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const { getDb } = require("../db/mongoClient"); // Import MongoDB utility
 
 const router = express.Router();
@@ -16,8 +17,11 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Email already exists." });
     }
 
-    // Insert the new user into the database
-    await usersCollection.insertOne({ username, email, password });
+    // Hash the password before saving to the database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert the new user with the hashed password
+    await usersCollection.insertOne({ username, email, password: hashedPassword });
     res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
     console.error("Error during signup:", error);
@@ -32,9 +36,15 @@ router.post("/login", async (req, res) => {
   const usersCollection = db.collection("users");
 
   try {
-    // Check user credentials
-    const user = await usersCollection.findOne({ email, password });
+    // Check if the user exists
+    const user = await usersCollection.findOne({ email });
     if (!user) {
+      return res.status(401).json({ message: "Invalid credentials." });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials." });
     }
 
