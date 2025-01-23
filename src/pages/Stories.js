@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./Stories.css";
 
 const Stories = () => {
   const navigate = useNavigate();
@@ -50,15 +51,15 @@ const Stories = () => {
   };
 
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h1>Stories</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <label htmlFor="genre-select" style={{ fontSize: '1.2rem' }}>Filter by Genre: </label>
+    <div className="stories-container">
+      <h1 className="stories-title">Stories</h1>
+      <div className="genre-filter">
+        <label htmlFor="genre-select" className="genre-label">Filter by Genre:</label>
         <select 
           id="genre-select" 
           value={selectedGenre} 
           onChange={handleGenreChange} 
-          style={{ padding: '10px', fontSize: '1rem', borderRadius: '5px' }}
+          className="genre-select"
         >
           <option value="All">All</option>
           {genres.map((genre, index) => (
@@ -67,23 +68,16 @@ const Stories = () => {
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+      <div className="stories-grid">
         {filteredStories.map((story) => (
           <div
             key={story.id}
             onClick={() => handleClick(story.id)}
-            style={{
-              border: '1px solid #ddd',
-              padding: '15px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              backgroundColor: '#f9f9f9',
-              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-            }}
+            className="story-card"
           >
-            <h2>{story.title}</h2>
-            <p>{story.description}</p>
-            <p><strong>Genre:</strong> {story.genre}</p>
+            <h2 className="story-title">{story.title}</h2>
+            <p className="story-description">{story.description}</p>
+            <p className="story-genre"><strong>Genre:</strong> {story.genre}</p>
           </div>
         ))}
       </div>

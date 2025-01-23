@@ -5,7 +5,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: var(--navbar-bg, #4A90E2); /* Dynamic for light/dark themes */
+    background-color: var(--navbar-bg, #4b2e2ede); /* Dynamic for light/dark themes */
     color: var(--navbar-text, #ffffff);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: sticky;
@@ -21,13 +21,13 @@
 .logo {
     font-size: 1.8rem;
     font-weight: bold;
-    color: var(--navbar-text, #ffffff);
+    color: var(--navbar-text, #ffefe6);
     text-decoration: none;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .logo:hover {
-    color: var(--logo-hover, #FFD700);
+    color: var(--logo-hover, #a0522d);
     transform: scale(1.1);
 }
 
@@ -47,7 +47,7 @@
 
 .nav-link:hover {
     background-color: var(--link-hover-bg, #ffffff);
-    color: var(--link-hover-text, #4A90E2);
+    color: var(--link-hover-text, #a0522d);
     transform: translateY(-3px);
 }
 
@@ -67,7 +67,7 @@
 }
 
 .hamburger:hover div {
-    background-color: var(--link-hover-bg, #FFD700);
+    background-color: var(--link-hover-bg, #a0522d);
 }
 
 /* Mobile menu styles */
@@ -78,7 +78,7 @@
     position: absolute;
     top: 60px;
     right: 20px;
-    background-color: var(--navbar-bg, #4A90E2);
+    background-color: var(--navbar-bg, #4b2e2eae);
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -90,8 +90,8 @@
 }
 
 .nav-links.mobile .nav-link:hover {
-    background-color: var(--link-hover-bg, #ffffff);
-    color: var(--link-hover-text, #4A90E2);
+    background-color: var(--link-hover-bg, #ffefe6cb);
+    color: var(--link-hover-text, #4b2e2ede);
     transform: translateX(10px);
 }
 
