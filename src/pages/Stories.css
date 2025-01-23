@@ -1,0 +1,108 @@
+/* Stories.css */
+body {
+  color: #ffefe6; /* Text color matching navbar */
+}
+
+.stories-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.stories-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--title-color, #ffefe6); /* Matches the navbar text */
+}
+
+.genre-filter {
+  margin-bottom: 20px;
+}
+
+.genre-label {
+  font-size: 1.2rem;
+  margin-right: 10px;
+  color: var(--label-color, #ffefe6); /* Soft cream color for labels */
+}
+
+.genre-select {
+  padding: 10px;
+  font-size: 1rem;
+  border: 2px solid var(--border-color, #4b2e2e);
+  border-radius: 5px;
+  background-color: var(--select-bg, #f3eadfe1); /* Beige for dropdown */
+  color: var(--select-text, #4b2e2e); /* Dark brown text */
+  transition: all 0.3s ease;
+}
+
+.genre-select:hover {
+  border-color: var(--hover-border, #a0522d); /* Sienna */
+  box-shadow: 0 2px 5px rgba(160, 82, 45, 0.2);
+}
+
+.stories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.story-card {
+  border: 1px solid var(--card-border, #4b2e2e); /* Matches navbar */
+  border-radius: 8px;
+  background-color: var(--card-bg, #f9f9f9bc); /* Soft neutral background */
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.story-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  background-color: var(--hover-bg, #ffefe6d8); /* Light peach on hover */
+}
+
+.story-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--title-color, #4b2e2e); /* Deep brown for titles */
+}
+
+.story-description {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: var(--description-color, #555); /* Muted gray for descriptions */
+}
+
+.story-genre {
+  font-size: 0.9rem;
+  color: var(--genre-color, #888); /* Neutral gray for genres */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .stories-title {
+      font-size: 2rem;
+  }
+
+  .genre-label {
+      font-size: 1rem;
+  }
+
+  .genre-select {
+      font-size: 0.9rem;
+  }
+
+  .story-card {
+      padding: 10px;
+  }
+
+  .story-title {
+      font-size: 1.2rem;
+  }
+
+  .story-description {
+      font-size: 0.9rem;
+  }
+}

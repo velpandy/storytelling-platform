@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Arial', sans-serif;
-  background-image: url('../assets/home.jpeg');
+  background-image: url('../assets/book1.png');
   background-size: cover;
   background-attachment: fixed;
   background-position: center;
@@ -11,7 +11,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #121212;
+    background-color: #1212127d;
     color: #e0e0e0;
   }
 
@@ -20,7 +20,7 @@ body {
   }
 
   .profile-header {
-    background-color: #1e88e5;
+    background-color: #1e033caa;
   }
 
   .profile-content {
@@ -43,7 +43,7 @@ body {
 }
 
 .profile-header {
-  background-color: #4a90e2;
+  background-color: #4b2e2ede;
   color: white;
   padding: 20px;
   border-radius: 10px;
@@ -63,10 +63,12 @@ body {
 .profile-header h1 {
   margin: 0;
   font-size: 2rem;
+  color: #ffefe6;
 }
 
 .profile-content {
-  background-color: white;
+  background-color: #4b2e2ede;
+  color: white;
   border-radius: 10px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
   padding: 30px;
@@ -86,7 +88,7 @@ body {
 .profile-content h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #555;
+  color: #ffefe6;
 }
 
 button {
@@ -104,23 +106,25 @@ button:hover {
 }
 
 .logout-button {
-  background-color: #e74c3c;
-  color: white;
+  background-color: #ffefe6;
+  color: #4b2e2ede;
   font-weight: bold;
 }
 
 .logout-button:hover {
   background-color: #c0392b;
+  color: #ffefe6
 }
 
 .go-to-stories-button {
-  background-color: #2ecc71;
-  color: white;
+  background-color: #ffefe6;
+  color: #4b2e2ede;
   font-weight: bold;
 }
 
 .go-to-stories-button:hover {
   background-color: #27ae60;
+  color: #ffefe6;
 }
 
 @media (max-width: 1024px) {
