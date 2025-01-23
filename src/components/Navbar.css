@@ -1,0 +1,138 @@
+/* Navbar.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--navbar-bg, #4A90E2); /* Dynamic for light/dark themes */
+    color: var(--navbar-text, #ffffff);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.logo-container {
+    flex: 1;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--navbar-text, #ffffff);
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.logo:hover {
+    color: var(--logo-hover, #FFD700);
+    transform: scale(1.1);
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-link {
+    font-size: 1.2rem;
+    color: var(--navbar-text, #ffffff);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--link-hover-bg, #ffffff);
+    color: var(--link-hover-text, #4A90E2);
+    transform: translateY(-3px);
+}
+
+/* Hamburger menu */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.hamburger div {
+    width: 25px;
+    height: 3px;
+    background-color: var(--navbar-text, #ffffff);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.hamburger:hover div {
+    background-color: var(--link-hover-bg, #FFD700);
+}
+
+/* Mobile menu styles */
+.nav-links.mobile {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: var(--navbar-bg, #4A90E2);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease;
+}
+
+.nav-links.mobile.active {
+    display: flex;
+}
+
+.nav-links.mobile .nav-link:hover {
+    background-color: var(--link-hover-bg, #ffffff);
+    color: var(--link-hover-text, #4A90E2);
+    transform: translateX(10px);
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+}
+
+@media (min-width: 769px) {
+    .hamburger {
+        display: none;
+    }
+
+    .nav-links {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+    }
+}
+
+/* Keyframes for mobile animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
