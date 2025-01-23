@@ -2,10 +2,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const http = require("http");
-const { connectToDb } = require("./db/mongoClient"); // MongoDB connection utility
-const authRoutes = require("./routes/auth"); // Authentication routes
+const { connectToDb } = require("./db/mongoClient");
+const authRoutes = require("./routes/auth");
 const roomRoutes = require("./routes/rooms");
 const collaborateRoutes = require("./routes/collaborate");
+const feedbackRoutes = require("./routes/feedback");
 const socketIo = require("socket.io");
 
 const app = express();
@@ -17,27 +18,33 @@ const io = socketIo(server, {
     allowedHeaders: ['Content-Type'],
     credentials: true, // Optional, depending on whether you're using cookies or sessions
   }
-}); // Initialize socket.io with the server
+});
 const PORT = 5000;
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(bodyParser.json());
-// app.use(express.json());
 
 // Routes
-app.use("/api", authRoutes); // Updated the base route to match the React front-end
+app.use("/api", authRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/collaborate", collaborateRoutes);
+app.use("/feedback", feedbackRoutes); // Include feedback routes
 
 // Real-time collaboration logic using socket.io
 io.on("connection", (socket) => {
   console.log("A user connected");
 
+  // Join a specific story room
+  socket.on("joinStory", (storyId) => {
+    console.log(`User joined story room: ${storyId}`);
+    socket.join(storyId); // This joins the room specific to the story ID
+  });
+
   // Handle real-time document updates
   socket.on("edit-document", (storyId, content) => {
-    // Broadcast document edit to other users
-    socket.broadcast.emit("document-edited", { storyId, content });
+    // Broadcast document edit to other users in the same story room
+    socket.to(storyId).emit("document-edited", { storyId, content });
   });
 
   // Handle user disconnect
@@ -49,7 +56,7 @@ io.on("connection", (socket) => {
 // Start the server
 const startServer = async () => {
   try {
-    await connectToDb(); // Connect to MongoDB
+    await connectToDb();
     server.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
     });
@@ -59,3 +66,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+

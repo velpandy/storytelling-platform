@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:5000"); // Replace with your actual backend URL
+// Replace with your backend URL
+const socket = io("http://localhost:5000");
 
 const StoryEditor = () => {
   const location = useLocation();
@@ -12,6 +13,10 @@ const StoryEditor = () => {
   const [rating, setRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState(null);
+
+  // Assuming that userId and userName are stored in a state or from authentication
+  const userId = JSON.parse(localStorage.getItem("user"))._id;  // Replace with actual user ID (e.g., from session or authentication)
+  const userName = JSON.parse(localStorage.getItem("user")).email;; // Replace with actual user name (e.g., from session or authentication)
 
   useEffect(() => {
     // Fetch the latest version of the selected story
@@ -75,6 +80,8 @@ const StoryEditor = () => {
           storyId: story.id,
           content: feedback,
           rating, // Include the rating in the submission
+          userId, // Include the user ID
+          userName, // Include the user name
         }),
       });
 
@@ -105,7 +112,7 @@ const StoryEditor = () => {
           padding: "10px",
           border: "1px solid #ddd",
           borderRadius: "5px",
-          backgroundColor: "#f9f9f9",
+          backgroundColor: "black",
           overflowY: "auto",
           whiteSpace: "pre-wrap",
           wordWrap: "break-word",

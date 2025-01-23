@@ -1,21 +1,22 @@
-/* collaborate.css */
+/* Updated collaborate.css */
 
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
   padding: 0;
-  background: #f8f9fa;
-  color: #343a40;
+  background: #3e2723; /* Dark brown background */
+  color: #f5f5f5; /* Light text color for contrast */
 }
 
 h1, h2, h3 {
-  color: #495057;
+  color: #f5f5f5; /* Light text color for headings */
 }
 
 h1 {
   text-align: center;
   margin: 20px 0;
   font-size: 2.5rem;
+  letter-spacing: 1px;
 }
 
 .container {
@@ -25,39 +26,49 @@ h1 {
 }
 
 .section {
-  background: #ffffff;
-  border-radius: 8px;
+  background: #5d4037; /* Slightly lighter brown for sections */
+  border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   animation: fadeIn 0.5s ease-in-out;
 }
 
 input, textarea, select {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
+  border: 1px solid #f5f5f5; /* Light border for inputs */
+  border-radius: 8px;
   box-sizing: border-box;
+  font-size: 1rem;
+  background: #3e2723; /* Same dark brown background */
+  color: #f5f5f5; /* Light text color for inputs */
 }
 
 textarea {
-  height: 100px;
+  height: 120px;
+  resize: none;
 }
 
 button {
-  background: #007bff;
+  background: #8d6e63; /* Lighter brown for buttons */
   color: #ffffff;
   border: none;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 button:hover {
-  background: #0056b3;
+  background: #6d4c41; /* Darker brown on hover */
+}
+
+button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
 }
 
 ul {
@@ -66,37 +77,112 @@ ul {
 }
 
 ul li {
-  padding: 10px;
-  background: #e9ecef;
+  padding: 12px;
+  background: #4e342e; /* Slightly lighter brown for list items */
   margin: 10px 0;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s;
 }
 
 ul li:hover {
-  background: #dee2e6;
+  background: #3e2723; /* Darker brown on hover */
+  transform: scale(1.02);
 }
 
 textarea:focus, input:focus, select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #f5f5f5;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
 .version-history ul li {
-  border: 1px solid #ced4da;
-  margin: 5px 0;
-  padding: 10px;
+  border: 1px solid #f5f5f5;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #5d4037;
+  transition: box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.version-history ul li:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.version-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-username {
+  font-weight: bold;
+  color: #ffeb3b; /* Yellow color for highlighted username */
+}
+
+.version-username:hover {
+  text-decoration: underline;
+}
+
+.version-timestamp {
+  font-size: 0.85rem;
+  color: #f5f5f5; /* Light text color for timestamps */
+}
+
+.version-content {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #f5f5f5; /* Light text color for content */
+}
+
+.version-content:hover {
+  background: #3e2723;
   border-radius: 5px;
+  padding: 5px;
 }
 
 .vote-buttons {
   display: flex;
-  gap: 10px;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .vote-buttons button {
-  padding: 5px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.vote-buttons .upvote {
+  background: #8bc34a;
+  color: #ffffff;
+}
+
+.vote-buttons .upvote:hover {
+  background: #7cb342;
+  transform: scale(1.05);
+}
+
+.vote-buttons .downvote {
+  background: #f44336;
+  color: #ffffff;
+}
+
+.vote-buttons .downvote:hover {
+  background: #d32f2f;
+  transform: scale(1.05);
 }
 
 @keyframes fadeIn {
@@ -113,21 +199,23 @@ textarea:focus, input:focus, select:focus {
 .story-item {
   display: flex;
   align-items: center;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  padding: 15px;
+  border: 1px solid #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: #5d4037;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s;
 }
 
 .story-item:hover {
-  background-color: #f9f9f9;
+  background-color: #3e2723;
+  transform: scale(1.01);
 }
 
 .story-icon {
-  margin-left: 10px;
-  font-size: 1.2em;
+  margin-left: auto;
+  font-size: 1.5em;
 }
 
 .story-icon .fas {
@@ -136,4 +224,20 @@ textarea:focus, input:focus, select:focus {
 
 .story-icon .fas.fa-lock {
   color: #f44336; /* Red for private */
+}
+
+/* Enhancing mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  .vote-buttons {
+    justify-content: center;
+    gap: 5px;
+  }
 }

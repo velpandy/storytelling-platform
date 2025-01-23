@@ -28,7 +28,7 @@ p {
 }
 
 .message {
-  background-color: #fff;
+  background-color: black;
   padding: 15px;
   margin-bottom: 15px;
   border-radius: 8px;
@@ -100,7 +100,7 @@ strong {
 }
 
 .reply {
-  background-color: #f1f1f1;
+  background-color: black;
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 8px;

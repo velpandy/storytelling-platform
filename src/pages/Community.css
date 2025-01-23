@@ -3,8 +3,8 @@
 /* Global Styles */
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  color: #343a40;
+  background: #3e2723; /* Dark brown background */
+  color: #f5f5f5; /* Light text color */
   margin: 0;
   padding: 0;
 }
@@ -21,7 +21,7 @@ body {
 .community h1 {
   text-align: center;
   font-size: 3rem;
-  color: #495057;
+  color: #f5f5f5; /* Light text for the title */
   margin-bottom: 30px;
   font-weight: bold;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
@@ -34,7 +34,7 @@ body {
   gap: 15px;
   max-width: 600px;
   margin: 0 auto 40px auto;
-  background: white;
+  background: #5d4037; /* Lighter brown for the form */
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -51,9 +51,11 @@ body {
 .community form button {
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid #f5f5f5; /* Light border for inputs */
   font-size: 1rem;
   transition: all 0.3s ease;
+  background: #3e2723; /* Dark brown background for inputs */
+  color: #f5f5f5; /* Light text color */
 }
 
 .community form input:focus,
@@ -69,7 +71,7 @@ body {
 }
 
 .community form button {
-  background: #007bff;
+  background: #8d6e63; /* Lighter brown for the button */
   color: white;
   border: none;
   font-weight: bold;
@@ -78,7 +80,7 @@ body {
 }
 
 .community form button:hover {
-  background: #0056b3;
+  background: #6d4c41; /* Darker brown on hover */
 }
 
 /* Available Rooms Section */
@@ -86,7 +88,7 @@ body {
   font-size: 2rem;
   text-align: center;
   margin: 50px 0 20px 0;
-  color: #495057;
+  color: #f5f5f5; /* Light text color for section titles */
   font-weight: 600;
 }
 
@@ -98,7 +100,7 @@ body {
 }
 
 .community li {
-  background: #ffffff;
+  background: #5d4037; /* Lighter brown for room items */
   padding: 20px;
   margin: 15px 0;
   border-radius: 8px;
@@ -113,19 +115,19 @@ body {
 
 .community li h3 {
   font-size: 1.8rem;
-  color: #343a40;
+  color: #f5f5f5; /* Light text color for room title */
   margin: 0 0 10px 0;
 }
 
 .community li p {
   font-size: 1.1rem;
-  color: #6c757d;
+  color: #f5f5f5; /* Light text color for room description */
   margin: 0 0 15px 0;
 }
 
 /* Join Button */
 .community li button {
-  background: #28a745;
+  background: #8bc34a;
   color: white;
   padding: 10px 20px;
   font-size: 1rem;
@@ -137,7 +139,7 @@ body {
 }
 
 .community li button:hover {
-  background: #218838;
+  background: #7cb342;
 }
 
 /* Animations */

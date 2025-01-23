@@ -81,7 +81,7 @@ const Stories = () => {
               padding: "15px",
               borderRadius: "8px",
               cursor: "pointer",
-              backgroundColor: "#f9f9f9",
+              backgroundColor: "black",
               boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
             }}
           >
