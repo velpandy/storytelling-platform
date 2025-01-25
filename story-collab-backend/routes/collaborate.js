@@ -118,28 +118,31 @@ router.post("/collaborate/respond", async (req, res) => {
 router.post('/versions', async (req, res) => {
   try {
     const db = getDb();
-    const { storyId, content, username } = req.body; // Replace userId with username
+    const { storyId, content, username, commitMessage } = req.body; // Include commitMessage
 
-    if (!storyId || !content || !username) { // Validate username instead of userId
+    // Validate the incoming data
+    if (!storyId || !content || !username || !commitMessage) { // Validate all fields, including commitMessage
       return res.status(400).json({ error: 'Invalid version data' });
     }
 
     const newVersion = {
       storyId,
-      content,
-      username, // Save username instead of userId
-      timestamp: new Date(),
+      content,         // Store content in the DB
+      username,        // Store username (not userId)
+      commitMessage,   // Store commit message
+      timestamp: new Date(),  // Store the timestamp of the version
     };
 
+    // Insert the new version into the database
     const result = await db.collection('versions').insertOne(newVersion);
-    
-    // Access inserted document from result.ops or directly use result.insertedId
+
+    // Access the inserted document and return it in the response
     const insertedVersion = {
       _id: result.insertedId,
       ...newVersion,
     };
 
-    res.status(201).json(insertedVersion);
+    res.status(201).json(insertedVersion); // Send the inserted version as response
   } catch (err) {
     res.status(500).json({ error: 'Failed to save version' });
   }

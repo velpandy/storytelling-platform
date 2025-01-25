@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import the default Quill styles
 
-// Replace with your backend URL
 const socket = io("http://localhost:5000");
 
 const StoryEditor = () => {
@@ -14,9 +15,8 @@ const StoryEditor = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  // Assuming that userId and userName are stored in a state or from authentication
-  const userId = JSON.parse(localStorage.getItem("user"))._id;  // Replace with actual user ID (e.g., from session or authentication)
-  const userName = JSON.parse(localStorage.getItem("user")).email;; // Replace with actual user name (e.g., from session or authentication)
+  const userId = JSON.parse(localStorage.getItem("user"))._id;
+  const userName = JSON.parse(localStorage.getItem("user")).email;
 
   useEffect(() => {
     // Fetch the latest version of the selected story
@@ -47,23 +47,6 @@ const StoryEditor = () => {
     };
   }, [story.id]);
 
-  // Render stars for rating
-  const renderStars = () => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <span
-        key={index}
-        style={{
-          cursor: "pointer",
-          fontSize: "24px",
-          color: index < rating ? "#FFD700" : "#ccc", // Gold for selected, gray for unselected
-        }}
-        onClick={() => setRating(index + 1)}
-      >
-        ★
-      </span>
-    ));
-  };
-
   // Handle feedback submission
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
@@ -79,9 +62,9 @@ const StoryEditor = () => {
         body: JSON.stringify({
           storyId: story.id,
           content: feedback,
-          rating, // Include the rating in the submission
-          userId, // Include the user ID
-          userName, // Include the user name
+          rating,
+          userId,
+          userName,
         }),
       });
 
@@ -103,29 +86,46 @@ const StoryEditor = () => {
     <div className="container" style={{ marginTop: "30px" }}>
       <h1>Story: {story.title}</h1>
 
-      {/* Displaying the content of the story */}
+      {/* Displaying the content of the story in a read-only view */}
       <div
         style={{
-          width: "100%",
-          height: "200px",
           marginBottom: "20px",
-          padding: "10px",
           border: "1px solid #ddd",
+          padding: "10px",
           borderRadius: "5px",
-          backgroundColor: "black",
-          overflowY: "auto",
-          whiteSpace: "pre-wrap",
-          wordWrap: "break-word",
+          backgroundColor: "#f9f9f9",
+          maxWidth: "900px",
+          margin: "0 auto",
+          height: "auto",
         }}
       >
-        {currentContent || "No content available for this story."}
+        <ReactQuill
+          value={currentContent}
+          readOnly={true} // Makes it view-only
+          theme="snow"   // Uses the "snow" theme, which is simple and clean
+          modules={{
+            toolbar: false, // Disables the toolbar (bold, italic, etc.)
+          }}
+        />
       </div>
 
       {/* Feedback form */}
       <form onSubmit={handleFeedbackSubmit} style={{ marginTop: "20px" }}>
-        {/* Render stars for rating */}
         <div style={{ marginBottom: "10px" }}>
-          {renderStars()}
+          {/* Render stars for rating */}
+          {Array.from({ length: 5 }, (_, index) => (
+            <span
+              key={index}
+              style={{
+                cursor: "pointer",
+                fontSize: "24px",
+                color: index < rating ? "#FFD700" : "#ccc", // Gold for selected, gray for unselected
+              }}
+              onClick={() => setRating(index + 1)}
+            >
+              ★
+            </span>
+          ))}
         </div>
 
         {/* Textarea for feedback */}

@@ -1,0 +1,113 @@
+/* Fullscreen Mode */
+.story-writer-editor.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background-color: white;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Basic styling for the editor container */
+.story-writer-editor {
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    position: relative;
+  }
+  
+  /* Toolbar styling */
+  .editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 5px;
+  }
+  
+  .count-info {
+    font-size: 14px;
+  }
+  
+  .count-item {
+    margin-right: 10px;
+  }
+  
+  /* Set a fixed height for the editor container */
+  .ql-container {
+    min-height: 400px; /* Set a fixed minimum height for the editor */
+    height: 400px; /* You can adjust this height based on your design needs */
+  }
+  
+  /* Set a larger height for the editable area */
+  .ql-editor {
+    min-height: 300px; /* Make sure the text area itself is large */
+    padding: 10px;
+    font-size: 16px; /* Optional: adjust font size for a better visual appearance */
+  }
+  
+  
+  /* Toolbar and Count Information */
+  .editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-bottom: 2px solid #ddd;
+    align-items: center;
+    font-size: 16px;
+  }
+  
+  .count-info {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .count-item {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .fullscreen-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .fullscreen-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .fullscreen-btn:active {
+    background-color: #388e3c;
+  }
+  
+  /* Editor Styles */
+  .editor-wrapper {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+  }
+  
+  .editor-content {
+    min-height: 300px;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+    color: #000;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 10px;
+    overflow-y: auto;
+  }
+  

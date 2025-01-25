@@ -1,9 +1,10 @@
-// Collaborate.js
 import React, { useState, useEffect } from "react";
 import { createRoom } from "./Community"; // Import the createRoom function
 import io from "socket.io-client";
 import './collaborate.css';
+import EditorConvertToHTML from "./EditorConverToHTML";
 import '@fortawesome/fontawesome-free/css/all.css';
+import debounce from 'lodash.debounce'; // Import lodash.debounce for debouncing content changes
 
 const socket = io("http://localhost:5000");
 
@@ -74,7 +75,7 @@ const Collaborate = () => {
 
       // Create a room associated with the story
       try {
-        const room = await createRoom(story.name, story.description, []); // Pass an empty array for invited users
+        const room = await createRoom(story.name, story.description, [userId]); // Pass an empty array for invited users
         alert(`Room for story created successfully! Room name: ${story.name}`);
       } catch (error) {
         console.error("Error creating room:", error);
@@ -122,16 +123,21 @@ const Collaborate = () => {
     // Join the story room for real-time updates
     socket.emit("joinStory", storyId);
   };
-  
 
-  const handleContentChange = (e) => {
-    const updatedContent = e.target.value;
+  // Debounced handleContentChange function to avoid too many state updates
+  const handleContentChange = debounce((updatedContent) => {
     setCurrentContent(updatedContent);
     socket.emit("updateContent", { storyId: currentStoryId, content: updatedContent });
-  };
+  }, 500); // Debounce with a 500ms delay
 
   const saveVersion = async () => {
-    const username = JSON.parse(localStorage.getItem("user")).email; // Get username from localStorage
+    const commitMessage = prompt("Enter a commit message for this version:");
+    if (!commitMessage) {
+      alert("Commit message is required.");
+      return;
+    }
+  
+    const username = JSON.parse(localStorage.getItem("user")).email;
   
     const response = await fetch("http://localhost:5000/collaborate/versions", {
       method: "POST",
@@ -139,24 +145,21 @@ const Collaborate = () => {
       body: JSON.stringify({
         storyId: currentStoryId,
         content: currentContent,
-        username: username, // Pass username instead of userId
+        username: username,
+        commitMessage: commitMessage,  // Send commit message
       }),
     });
   
     const savedVersion = await response.json();
   
     if (response.ok) {
-      // Emit the new version to other clients
       socket.emit("updateVersion", savedVersion);
-  
-      // Immediately update the version history in the current frontend
       setVersionHistory((prevVersions) => [...prevVersions, savedVersion]);
       alert("Version saved successfully!");
     } else {
       console.error("Failed to save version:", savedVersion.error);
     }
   };
-  
   
 
   const revertToVersion = (versionContent) => {
@@ -193,8 +196,6 @@ const Collaborate = () => {
       console.error("Failed to submit vote:", err);
     }
   };
-  
-  
 
   return (
     <div className="container">
@@ -244,37 +245,34 @@ const Collaborate = () => {
       {currentStoryId && (
         <div className="section">
           <h2>Collaborate on {stories.find((s) => s._id === currentStoryId)?.name}</h2>
-          <textarea
-            value={currentContent}
-            onChange={handleContentChange}
-            placeholder="Edit story..."
-          />
-          <button onClick={saveVersion}>Save Version</button>
 
-          <div className="version-history">
+          <EditorConvertToHTML
+            initialContent={currentContent}
+            onChange={handleContentChange}
+
+          />
+
+          <button onClick={saveVersion}>Save Version</button>
+          <div>
   <h3>Version History</h3>
   <ul>
     {versionHistory.map((version) => (
       <li key={version._id}>
-        <strong>
-          {/* Display only the first line of the version content */}
-          {version.content.split('\n')[0]}
-        </strong>
-        <small>
-          {/* Display the username saved with the version */}
-          {version.username} - {new Date(version.timestamp).toLocaleString()}
-        </small>
-        <button onClick={() => revertToVersion(version.content)}>Revert</button>
+        <button onClick={() => revertToVersion(version.content)}>
+          Revert to Version {version.versionNumber}
+        </button>
+        <p><strong>Commit Message:</strong> {version.commitMessage}</p>  {/* Show commit message */}
         <div>
           <button onClick={() => handleVote(version._id, "up")}>Upvote</button>
           <button onClick={() => handleVote(version._id, "down")}>Downvote</button>
-          <p>Upvotes: {votes[version._id]?.up || 0}</p>
-          <p>Downvotes: {votes[version._id]?.down || 0}</p>
         </div>
+        <div>Upvotes: {votes[version._id]?.up || 0}</div>
+        <div>Downvotes: {votes[version._id]?.down || 0}</div>
       </li>
     ))}
   </ul>
 </div>
+
         </div>
       )}
     </div>

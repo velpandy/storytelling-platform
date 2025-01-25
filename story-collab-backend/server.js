@@ -22,7 +22,7 @@ const io = socketIo(server, {
 const PORT = 5000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: '*', credentials: true }));
 app.use(bodyParser.json());
 
 // Routes
@@ -35,17 +35,8 @@ app.use("/feedback", feedbackRoutes); // Include feedback routes
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  // Join a specific story room
-  socket.on("joinStory", (storyId) => {
-    console.log(`User joined story room: ${storyId}`);
-    socket.join(storyId); // This joins the room specific to the story ID
-  });
 
   // Handle real-time document updates
-  socket.on("edit-document", (storyId, content) => {
-    // Broadcast document edit to other users in the same story room
-    socket.to(storyId).emit("document-edited", { storyId, content });
-  });
 
   // Handle user disconnect
   socket.on("disconnect", () => {
