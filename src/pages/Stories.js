@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import './Stories.css';
+
 const Stories = () => {
   const navigate = useNavigate();
   const [stories, setStories] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
-  const [genres, setGenres] = useState(["Fantasy", "Sci-Fi", "Mystery", "Romance"]);
+  const [genres, setGenres] = useState(["Fantasy", "SciFi", "Mystery", "Shounen", "Horror", "Romance", "Adventure"]);
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [authenticated, setAuthenticated] = useState(true); // Simulating authentication state
 
@@ -19,7 +20,8 @@ const Stories = () => {
           id: story._id,
           title: story.name,
           description: story.description,
-          genre: genres.includes(story.genre) ? story.genre : "Unknown", // Fallback if genre is not listed
+          // Ensure genre is an array; fallback to ["Unknown"] if not provided
+          genre: Array.isArray(story.genre) && story.genre.length ? story.genre : ["Unknown"],
         }));
         setStories(fetchedStories);
         setFilteredStories(fetchedStories);
@@ -32,11 +34,12 @@ const Stories = () => {
 
   // Filter stories based on selected genre
   const handleGenreChange = (event) => {
-    setSelectedGenre(event.target.value);
-    if (event.target.value === "All") {
+    const selected = event.target.value;
+    setSelectedGenre(selected);
+    if (selected === "All") {
       setFilteredStories(stories);
     } else {
-      setFilteredStories(stories.filter((story) => story.genre === event.target.value));
+      setFilteredStories(stories.filter((story) => story.genre.includes(selected)));
     }
   };
 
@@ -83,12 +86,14 @@ const Stories = () => {
               cursor: "pointer",
               backgroundColor: "black",
               boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              color: "white",
             }}
           >
             <h2>{story.title}</h2>
             <p>{story.description}</p>
             <p>
-              <strong>Genre:</strong> {story.genre}
+              <strong>Genre:</strong>{" "}
+              {Array.isArray(story.genre) ? story.genre.join(", ") : "Unknown"}
             </p>
           </div>
         ))}

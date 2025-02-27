@@ -26,13 +26,22 @@ router.get("/stories", async (req, res) => {
 });
 
 // Create a new story
+// Create a new story (genre is an array)
 router.post("/stories", async (req, res) => {
   try {
     const db = getDb();
-    const { name, description, isPublic, creatorId } = req.body;
+    const { name, description, isPublic, creatorId, genre } = req.body;
 
-    if (!name || !description || creatorId === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
+    // Validate required fields and ensure genre is a non-empty array
+    if (
+      !name ||
+      !description ||
+      creatorId === undefined ||
+      !genre ||
+      !Array.isArray(genre) ||
+      genre.length === 0
+    ) {
+      return res.status(400).json({ error: "Missing required fields or invalid genre" });
     }
 
     const newStory = {
@@ -40,16 +49,20 @@ router.post("/stories", async (req, res) => {
       description,
       isPublic,
       creatorId,
+      genre, // Genre is stored as an array
       collaborators: [],
     };
 
     const result = await db.collection("stories").insertOne(newStory);
-    res.status(201).json(result.ops[0]);
+    // Manually construct the response using insertedId
+    const createdStory = { _id: result.insertedId, ...newStory };
+    res.status(201).json(createdStory);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create story" });
   }
 });
+
 
 // Request to collaborate (for private stories)
 router.post("/collaborate/request", async (req, res) => {

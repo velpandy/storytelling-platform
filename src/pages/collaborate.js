@@ -48,46 +48,52 @@ const Collaborate = () => {
     };
   }, [currentStoryId]);
 
-  const handleStoryCreation = async () => {
-    if (!story.name.trim() || story.name.length < 3) {
-      alert("Story name must be at least 3 characters long.");
-      return;
+const handleStoryCreation = async () => {
+  if (!story.name.trim() || story.name.length < 3) {
+    alert("Story name must be at least 3 characters long.");
+    return;
+  }
+  if (!story.description.trim() || story.description.length < 10) {
+    alert("Story description must be at least 10 characters long.");
+    return;
+  }
+  if (!story.genre || !Array.isArray(story.genre) || story.genre.length === 0) {
+    alert("Please select at least one genre.");
+    return;
+  }
+
+  const response = await fetch("http://localhost:5000/collaborate/stories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...story,
+      creatorId: userId,
+      genre: story.genre, // Include the genre array
+    }),
+  });
+
+  const newStory = await response.json();
+
+  if (response.ok) {
+    // Emit the new story to other clients
+    socket.emit("newStory", newStory);
+
+    // Create a room associated with the story
+    try {
+      const room = await createRoom(story.name, story.description, [userId]); // Pass an empty array for invited users
+      alert(`Room for story created successfully! Room name: ${story.name}`);
+    } catch (error) {
+      console.error("Error creating room:", error);
     }
-    if (!story.description.trim() || story.description.length < 10) {
-      alert("Story description must be at least 10 characters long.");
-      return;
-    }
 
-    const response = await fetch("http://localhost:5000/collaborate/stories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...story,
-        creatorId: userId,
-      }),
-    });
+    // Immediately update the stories list in the current frontend
+    setStories((prevStories) => [...prevStories, newStory]);
+    alert("Story created successfully!");
+  } else {
+    alert(`Error creating story: ${newStory.error}`);
+  }
+};
 
-    const newStory = await response.json();
-
-    if (response) {
-      // Emit the new story to other clients
-      socket.emit("newStory", newStory);
-
-      // Create a room associated with the story
-      try {
-        const room = await createRoom(story.name, story.description, [userId]); // Pass an empty array for invited users
-        alert(`Room for story created successfully! Room name: ${story.name}`);
-      } catch (error) {
-        console.error("Error creating room:", error);
-      }
-
-      // Immediately update the stories list in the current frontend
-      setStories((prevStories) => [...prevStories, newStory]);
-      alert("Story created successfully!");
-    } else {
-      alert(`Error creating story: ${newStory.error}`);
-    }
-  };
 
   const selectStory = async (storyId) => {
     setCurrentStoryId(storyId);
@@ -222,6 +228,35 @@ const Collaborate = () => {
           <option value="true">Public</option>
           <option value="false">Private</option>
         </select>
+        {/* Checkbox-based Genre Selection aligned horizontally with a green tick */}
+      <div>
+        <h3>Genres:</h3>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+          {["Fantasy", "SciFi", "Romance", "Mystery", "Horror", "Shounen", "Adventure"].map((genre) => (
+            <label key={genre} style={{ marginRight: "15px", display: "flex", alignItems: "center" }}>
+              <input
+                type="checkbox"
+                value={genre}
+                style={{ accentColor: "green", marginRight: "5px" }}
+                checked={story.genre && story.genre.includes(genre)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    // Add genre to the array
+                    setStory({ ...story, genre: [...(story.genre || []), genre] });
+                  } else {
+                    // Remove genre from the array
+                    setStory({
+                      ...story,
+                      genre: (story.genre || []).filter((g) => g !== genre),
+                    });
+                  }
+                }}
+              />
+              {genre}
+            </label>
+          ))}
+        </div>
+      </div>
         <button onClick={handleStoryCreation}>Create Story</button>
       </div>
 

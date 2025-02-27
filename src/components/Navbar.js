@@ -12,7 +12,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="logo-container">
-        <Link to="/" className="logo">StoryCollab</Link>
+        <Link to="/" className="logo">Kadhaipoma...</Link>
       </div>
       <div className={`nav-links ${isMenuOpen ? "mobile active" : ""}`}>
         <Link to="/" className="nav-link" onClick={() => setIsMenuOpen(false)}>Home</Link>
