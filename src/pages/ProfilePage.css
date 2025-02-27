@@ -11,12 +11,12 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #1212127d;
+    background-color: #121212;
     color: #e0e0e0;
   }
 
   .profile-page-container {
-    background: rgba(50, 50, 50, 0.8);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .profile-header {
@@ -37,7 +37,7 @@ body {
   padding: 20px;
   margin: 10px;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.138);  /* Adds a subtle background to the content */
+  background: rgba(255, 255, 255, 0.01);  /* Adds a subtle background to the content */
   border-radius: 15px;
   transition: background 0.3s ease;
 }

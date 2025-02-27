@@ -169,21 +169,21 @@ router.get("/versions/:storyId", validateObjectId, async (req, res) => {
   }
 });
 
-// Cast a vote on a version
+// Cast a vote on a version (updated to include storyId)
 router.post("/votes", async (req, res) => {
   try {
     const db = getDb();
-    const { versionId, userId, vote } = req.body;
+    const { versionId, storyId, userId, vote } = req.body;
 
-    // Validate input
-    if (!versionId || !userId || !["up", "down"].includes(vote)) {
+    // Validate input: storyId is now required along with versionId, userId, and a valid vote
+    if (!versionId || !storyId || !userId || !["up", "down"].includes(vote)) {
       return res.status(400).json({ error: "Invalid vote data" });
     }
 
-    // Update or insert the vote
+    // Update or insert the vote, including storyId in the vote document
     const result = await db.collection("votes").updateOne(
       { versionId: new ObjectId(versionId), userId }, // Filter by versionId and userId
-      { $set: { vote } }, // Set the vote (up or down)
+      { $set: { vote, storyId } }, // Set the vote and include storyId
       { upsert: true } // Insert if it doesn't exist
     );
 
@@ -203,14 +203,17 @@ router.post("/votes", async (req, res) => {
       { up: 0, down: 0 }
     );
 
-    // Emit real-time update via socket.io
-   
-    res.status(200).json({ message: "Vote recorded successfully", votes: voteSummary });
+    // Emit real-time update via socket.io (if implemented)
+
+    res
+      .status(200)
+      .json({ message: "Vote recorded successfully", votes: voteSummary });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to cast vote" });
   }
 });
+
 
 // Route to get upvotes and downvotes for a specific version
 router.get("/votes/version/:versionId", validateObjectId, async (req, res) => {
@@ -241,6 +244,52 @@ router.get("/votes/version/:versionId", validateObjectId, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch votes" });
   }
 });
+
+// Get the most upvoted version for a story
+router.get("/versions/most-voted/:storyId", async (req, res) => {
+  try {
+    const db = getDb();
+    const { storyId } = req.params;
+
+    // Aggregate versions with a lookup to join votes and count upvotes
+    const mostVotedVersion = await db.collection("versions").aggregate([
+      { $match: { storyId: storyId } }, // Filter versions by the given storyId
+      {
+        $lookup: {
+          from: "votes",
+          localField: "_id",
+          foreignField: "versionId",
+          as: "votes"
+        }
+      },
+      {
+        $addFields: {
+          upvotes: {
+            $size: {
+              $filter: {
+                input: "$votes",
+                as: "vote",
+                cond: { $eq: ["$$vote.vote", "up"] } // Count only "up" votes
+              }
+            }
+          }
+        }
+      },
+      { $sort: { upvotes: -1 } }, // Sort by the number of upvotes in descending order
+      { $limit: 1 } // Limit to the top version
+    ]).toArray();
+
+    if (mostVotedVersion.length === 0) {
+      return res.status(404).json({ error: "No versions found for this story" });
+    }
+
+    res.status(200).json(mostVotedVersion[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch most upvoted version" });
+  }
+});
+
 
 
 module.exports = router;

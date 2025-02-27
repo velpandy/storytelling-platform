@@ -19,33 +19,35 @@ const StoryEditor = () => {
   const userName = JSON.parse(localStorage.getItem("user")).email;
 
   useEffect(() => {
-    // Fetch the latest version of the selected story
+    // Fetch the most upvoted version of the selected story
     const fetchStoryContent = async () => {
       try {
-        const versions = await fetch(`http://localhost:5000/collaborate/versions/${story.id}`).then((res) => res.json());
-        if (versions.length > 0) {
-          setCurrentContent(versions[versions.length - 1].content);
+        const version = await fetch(`http://localhost:5000/collaborate/versions/most-voted/${story.id}`)
+          .then((res) => res.json());
+        if (version && version.content) {
+          setCurrentContent(version.content);
         }
       } catch (err) {
         console.error("Failed to fetch story content:", err);
       }
     };
-
+  
     fetchStoryContent();
-
+  
     socket.emit("joinStory", story.id); // Join the story room for real-time updates
-
+  
     socket.on("updateVersion", (updatedVersion) => {
       if (updatedVersion.storyId === story.id) {
         setCurrentContent(updatedVersion.content);
       }
     });
-
+  
     // Cleanup on component unmount
     return () => {
       socket.off("updateVersion");
     };
   }, [story.id]);
+  
 
   // Handle feedback submission
   const handleFeedbackSubmit = async (e) => {
